@@ -7,8 +7,10 @@ export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
-  create(@Body() createRoomDto: CreateRoomDto) {
-    return this.roomsService.create(createRoomDto);
+  async create(@Body() createRoomDto: CreateRoomDto) {
+    const result = await this.roomsService.create(createRoomDto);
+
+    return result;
   }
 
   @Get(':id')

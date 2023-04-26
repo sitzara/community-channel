@@ -1,1 +1,3 @@
-export class Room {}
+export class Room {
+  name: string;
+}
