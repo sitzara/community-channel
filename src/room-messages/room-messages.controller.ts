@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Req } from '@nestjs/common';
 import { RoomMessagesService } from './room-messages.service';
 import { CreateRoomMessageDto } from './dto/create-room-message.dto';
+import { AuthUserRequest } from '../common/types';
 
 @Controller('rooms/:id/messages')
 export class RoomMessagesController {
@@ -10,9 +11,9 @@ export class RoomMessagesController {
   create(
     @Param('id') id: string,
     @Body() createRoomMessageDto: CreateRoomMessageDto,
-  ) {
-    // TODO: get userId
-    const userId = '';
+    @Req() req: AuthUserRequest,
+  ): string {
+    const userId = req.user?.id;
     return this.roomMessagesService.create(id, userId, createRoomMessageDto);
   }
 
