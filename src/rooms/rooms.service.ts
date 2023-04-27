@@ -2,6 +2,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Room } from './schemas/room.schema';
+import { RoomEntity } from './entities/room.entity';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UsersService } from '../users/users.service';
 
@@ -12,24 +13,42 @@ export class RoomsService {
     private userService: UsersService,
   ) {}
 
-  async create(userId: string, createRoomDto: CreateRoomDto): Promise<Room> {
+  async create(
+    userId: string,
+    createRoomDto: CreateRoomDto,
+  ): Promise<RoomEntity> {
     const user = await this.userService.findById(userId);
 
     const { name } = createRoomDto;
-    const result = await this.roomModel.create({ name, createdBy: user });
+    const room = await this.roomModel.create({
+      name,
+      creatorId: user.id,
+    });
 
-    console.log('Room created', result);
-    return result;
+    console.log('Room created', room);
+    return {
+      id: room._id.toString(),
+      name: room.name,
+      creatorId: room.creatorId,
+      createdAt: room.createdAt,
+      updatedAt: room.updatedAt,
+    };
   }
 
-  async findById(id: string) {
+  async findById(id: string): Promise<RoomEntity> {
     const room = await this.roomModel.findById(id);
     if (!room) {
-      console.log('Room not found: id = ', id);
+      console.error('Room not found: id = ', id);
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     }
 
     console.log('Room found', room);
-    return room;
+    return {
+      id: room._id.toString(),
+      name: room.name,
+      creatorId: room.creatorId,
+      createdAt: room.createdAt,
+      updatedAt: room.updatedAt,
+    };
   }
 }

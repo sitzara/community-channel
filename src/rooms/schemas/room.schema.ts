@@ -1,16 +1,26 @@
 import * as mongoose from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { User } from '../..//users/schemas/user.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 export type RoomDocument = mongoose.HydratedDocument<Room>;
 
 @Schema({ timestamps: true })
 export class Room {
+  @ApiProperty()
   @Prop({ required: true })
   name: string;
 
-  @Prop({ type: User, ref: 'User' })
-  createdBy: User;
+  @ApiProperty()
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  creatorId: string;
+
+  @ApiProperty()
+  @Prop({ type: Date })
+  createdAt: Date;
+
+  @ApiProperty()
+  @Prop({ type: Date })
+  updatedAt: Date;
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);

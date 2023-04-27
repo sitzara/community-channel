@@ -11,8 +11,9 @@ import { AuthUserRequest } from '../types';
 export class AuthMiddleware implements NestMiddleware {
   use(req: AuthUserRequest, res: Response, next: NextFunction) {
     const userId = req.headers['user-id'] as string;
-    console.log('userId', userId);
+
     if (!userId) {
+      console.error('Unauthorized user');
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
 
