@@ -12,7 +12,7 @@ export class RoomMessagesController {
     @Param('id') id: string,
     @Body() createRoomMessageDto: CreateRoomMessageDto,
     @Req() req: AuthUserRequest,
-  ): string {
+  ) {
     const userId = req.user?.id;
     return this.roomMessagesService.create(id, userId, createRoomMessageDto);
   }

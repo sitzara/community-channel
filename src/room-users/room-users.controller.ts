@@ -7,10 +7,10 @@ export class RoomUsersController {
   constructor(private readonly roomUsersService: RoomUsersService) {}
 
   @Post()
-  create(
+  async create(
     @Param('id') id: string,
     @Body() createRoomUserDto: CreateRoomUserDto,
   ) {
-    return this.roomUsersService.create(id, createRoomUserDto);
+    await this.roomUsersService.create(id, createRoomUserDto);
   }
 }

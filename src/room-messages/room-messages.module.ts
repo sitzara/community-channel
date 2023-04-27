@@ -1,17 +1,25 @@
-// import { Module } from '@nestjs/common';
 import {
   Module,
   NestModule,
   RequestMethod,
   MiddlewareConsumer,
 } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AuthMiddleware } from '../common/middlewares/auth.middleware';
 import { RoomMessagesService } from './room-messages.service';
 import { RoomMessagesController } from './room-messages.controller';
+import { RoomMessage, RoomMessageSchema } from './schemas/room-message.schema';
 import { RoomsModule } from '../rooms/rooms.module';
+import { RoomUsersModule } from '../room-users/room-users.module';
 
 @Module({
-  imports: [RoomsModule],
+  imports: [
+    MongooseModule.forFeature([
+      { name: RoomMessage.name, schema: RoomMessageSchema },
+    ]),
+    RoomsModule,
+    RoomUsersModule,
+  ],
   controllers: [RoomMessagesController],
   providers: [RoomMessagesService],
 })
