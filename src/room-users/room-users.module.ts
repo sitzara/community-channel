@@ -1,5 +1,11 @@
-import { Module } from '@nestjs/common';
+import {
+  Module,
+  NestModule,
+  RequestMethod,
+  MiddlewareConsumer,
+} from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthMiddleware } from '../common/middlewares/auth.middleware';
 import { UsersModule } from '../users/users.module';
 import { RoomUsersService } from './room-users.service';
 import { RoomUsersController } from './room-users.controller';
@@ -18,4 +24,10 @@ import { RoomsModule } from '../rooms/rooms.module';
   providers: [RoomUsersService],
   exports: [RoomUsersService],
 })
-export class RoomUsersModule {}
+export class RoomUsersModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes({ path: 'rooms/:id/users', method: RequestMethod.POST });
+  }
+}
