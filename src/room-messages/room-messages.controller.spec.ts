@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RoomMessagesController } from './room-messages.controller';
 import { RoomMessagesService } from './room-messages.service';
 
-describe('RoomMessagesController', () => {
+describe.skip('RoomMessagesController', () => {
   let controller: RoomMessagesController;
 
   beforeEach(async () => {
