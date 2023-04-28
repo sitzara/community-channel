@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Logger, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateRoomMessageDto } from './dto/create-room-message.dto';
@@ -8,6 +8,8 @@ import { RoomUsersService } from '../room-users/room-users.service';
 
 @Injectable()
 export class RoomMessagesService {
+  private readonly logger = new Logger(RoomMessagesService.name);
+
   constructor(
     @InjectModel(RoomMessage.name) private roomMessageModel: Model<RoomMessage>,
     private roomUsersService: RoomUsersService,
@@ -20,7 +22,9 @@ export class RoomMessagesService {
   ): Promise<RoomMessageEntity> {
     const roomUser = await this.roomUsersService.findOne(roomId, userId);
     if (!roomUser) {
-      console.error('User can not save messages to the Room');
+      this.logger.log(
+        `User doesn\'t belong to the Room: roomId = ${roomId}, userId = ${userId}`,
+      );
       throw new HttpException('Not acceptable', HttpStatus.NOT_ACCEPTABLE);
     }
 
@@ -33,7 +37,7 @@ export class RoomMessagesService {
       text,
     });
 
-    console.log('Message added', message);
+    this.logger.log(`Message added: ${message}`);
     return {
       id: message._id.toString(),
       roomId: message.roomId,

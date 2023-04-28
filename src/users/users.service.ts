@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Logger, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
@@ -7,13 +7,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
     const { name } = createUserDto;
     const user = await this.userModel.create({ name });
 
-    console.log('User created', user);
+    this.logger.log(`User created: ${user}`);
     return {
       id: user._id.toString(),
       name: user.name,
@@ -25,11 +27,11 @@ export class UsersService {
   async findById(id: string): Promise<UserEntity> {
     const user = await this.userModel.findById(id);
     if (!user) {
-      console.error('User not found: id = ', id);
+      this.logger.log(`User not found: id = ${id}`);
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     }
 
-    console.log('User found', user);
+    this.logger.log(`User found: ${user}`);
     return {
       id: user._id.toString(),
       name: user.name,

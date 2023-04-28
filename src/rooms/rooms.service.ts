@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Logger, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Room } from './schemas/room.schema';
@@ -8,6 +8,8 @@ import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class RoomsService {
+  private readonly logger = new Logger(RoomsService.name);
+
   constructor(
     @InjectModel(Room.name) private roomModel: Model<Room>,
     private userService: UsersService,
@@ -25,7 +27,7 @@ export class RoomsService {
       creatorId: user.id,
     });
 
-    console.log('Room created', room);
+    this.logger.log(`Room created: ${room}`);
     return {
       id: room._id.toString(),
       name: room.name,
@@ -38,11 +40,11 @@ export class RoomsService {
   async findById(id: string): Promise<RoomEntity> {
     const room = await this.roomModel.findById(id);
     if (!room) {
-      console.error('Room not found: id = ', id);
+      this.logger.log(`Room not found: id = ${id}`);
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     }
 
-    console.log('Room found', room);
+    this.logger.log(`Room found: ${room}`);
     return {
       id: room._id.toString(),
       name: room.name,

@@ -2,7 +2,11 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Community Channel is an API which allows:
+- Create a room
+- Add a user to a room
+- Send a message to a room
+- Get latest messages from a room
 
 ## Installation
 
@@ -36,6 +40,8 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Documentation
+After running the application, documentation can be found [localhost:3000/docs](localhost:3000/docs)
+
 ## Leftovers
-- Add logger
 - Improve Authentication

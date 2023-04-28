@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Logger, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RoomUser } from './schemas/room-user.schema';
@@ -9,6 +9,8 @@ import { RoomsService } from '../rooms/rooms.service';
 
 @Injectable()
 export class RoomUsersService {
+  private readonly logger = new Logger(RoomUsersService.name);
+
   constructor(
     @InjectModel(RoomUser.name) private roomUserModel: Model<RoomUser>,
     private userService: UsersService,
@@ -25,7 +27,7 @@ export class RoomUsersService {
 
     const roomUser = await this.findOne(roomId, userId);
     if (roomUser) {
-      console.error(
+      this.logger.log(
         `User is already added to the room: roomId = ${roomId}, userId = ${userId}`,
       );
       throw new HttpException('Already added', HttpStatus.CONFLICT);
@@ -36,8 +38,8 @@ export class RoomUsersService {
       userId: user.id,
       userName: user.name,
     });
-    console.log('User added to the Room', result);
 
+    this.logger.log(`User added to the Room: ${result}`);
     return {
       id: result._id.toString(),
       roomId: result.roomId,
