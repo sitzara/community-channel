@@ -8,15 +8,18 @@ import { User } from '../src/users/schemas/user.schema';
 import { RoomsModule } from '../src/rooms/rooms.module';
 import { RoomsService } from '../src/rooms/rooms.service';
 import { Room } from '../src/rooms/schemas/room.schema';
+import { RoomUsersModule } from '../src/room-users/room-users.module';
+import { RoomUsersService } from '../src/room-users/room-users.service';
+import { RoomUser } from '../src/room-users/schemas/room-user.schema';
 
-describe('RoomsController (e2e)', () => {
+describe('RoomUsersController (e2e)', () => {
   let app: INestApplication;
   let moduleRef: TestingModule;
-  let roomsService: RoomsService;
+  let roomUsersService: RoomUsersService;
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [UsersModule, RoomsModule],
+      imports: [UsersModule, RoomsModule, RoomUsersModule],
     })
       .overrideProvider(UsersService)
       .useValue({ findById: jest.fn() })
@@ -26,43 +29,52 @@ describe('RoomsController (e2e)', () => {
       .useValue({ create: jest.fn() })
       .overrideProvider(getModelToken(Room.name))
       .useValue({})
+      .overrideProvider(RoomUsersService)
+      .useValue({ create: jest.fn() })
+      .overrideProvider(getModelToken(RoomUser.name))
+      .useValue({})
       .compile();
 
     app = moduleRef.createNestApplication();
     await app.init();
 
-    roomsService = moduleRef.get<RoomsService>(RoomsService);
+    roomUsersService = moduleRef.get<RoomUsersService>(RoomUsersService);
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  describe('/rooms (POST)', () => {
-    it('should return CREATED status and created Room', async () => {
-      const createRoomDto = { name: 'Room # 1' };
-      const result = {
-        id: '456',
-        name: createRoomDto.name,
-        createdAt: '2023-04-27T20:12:39.742Z',
-        updatedAt: '2023-04-27T20:12:39.742Z',
+  describe('/rooms/:id/users (POST)', () => {
+    it('should return CREATED status', async () => {
+      const roomId = '456';
+      const createRoomDto = { userId: '321' };
+      const roomUserEntity = {
+        userId: createRoomDto.userId,
+        roomId,
+        userName: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (roomsService.create as jest.Mock).mockResolvedValue(result);
+      (roomUsersService.create as jest.Mock).mockResolvedValue({
+        id: '789',
+        ...roomUserEntity,
+      });
 
       const response = await request(app.getHttpServer())
-        .post('/rooms')
+        .post(`/rooms/${roomId}/users`)
         .send(createRoomDto)
         .set('user-id', '123');
       expect(response.status).toBe(HttpStatus.CREATED);
-      expect(response.body).toEqual(result);
     });
 
     it('should return UNAUTHORIZED in user-id header was not provided', async () => {
-      const createRoomDto = { name: 'Room # 1' };
+      const roomId = '456';
+      const createRoomDto = { userId: '321' };
 
       const response = await request(app.getHttpServer())
-        .post('/rooms')
+        .post(`/rooms/${roomId}/users`)
         .send(createRoomDto);
       expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
       expect(response.body).toEqual({
@@ -72,15 +84,16 @@ describe('RoomsController (e2e)', () => {
     });
 
     it('should return HttpStatus in case of HttpException', async () => {
-      const createRoomDto = { name: 'Room # 1' };
+      const roomId = '456';
+      const createRoomDto = { userId: '321' };
       const exception = new HttpException('Not found', HttpStatus.NOT_FOUND);
 
-      (roomsService.create as jest.Mock).mockImplementation(() => {
+      (roomUsersService.create as jest.Mock).mockImplementation(() => {
         throw exception;
       });
 
       const response = await request(app.getHttpServer())
-        .post('/rooms')
+        .post(`/rooms/${roomId}/users`)
         .send(createRoomDto)
         .set('user-id', '123');
       expect(response.status).toBe(HttpStatus.NOT_FOUND);
@@ -91,15 +104,16 @@ describe('RoomsController (e2e)', () => {
     });
 
     it('should return INTERNAL_SERVER_ERROR in case of unexpected error', async () => {
-      const createRoomDto = { name: 'Room # 1' };
+      const roomId = '456';
+      const createRoomDto = { userId: '321' };
       const exception = new Error('MongoDB error');
 
-      (roomsService.create as jest.Mock).mockImplementation(() => {
+      (roomUsersService.create as jest.Mock).mockImplementation(() => {
         throw exception;
       });
 
       const response = await request(app.getHttpServer())
-        .post('/rooms')
+        .post(`/rooms/${roomId}/users`)
         .send(createRoomDto)
         .set('user-id', '123');
       expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);

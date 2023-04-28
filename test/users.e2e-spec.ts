@@ -33,28 +33,34 @@ describe('UserController (e2e)', () => {
 
   describe('/users (POST)', () => {
     it('should return CREATED status and created User', async () => {
+      const createUserDto = { name: 'John Doe' };
       const result = {
         id: '123',
-        name: 'John Doe',
+        name: createUserDto.name,
         createdAt: '2023-04-27T20:12:39.742Z',
         updatedAt: '2023-04-27T20:12:39.742Z',
       };
 
       (usersService.create as jest.Mock).mockResolvedValue(result);
 
-      const response = await request(app.getHttpServer()).post('/users');
+      const response = await request(app.getHttpServer())
+        .post('/users')
+        .send(createUserDto);
       expect(response.status).toBe(HttpStatus.CREATED);
       expect(response.body).toEqual(result);
     });
 
     it('should return INTERNAL_SERVER_ERROR in case of unexpected error', async () => {
+      const createUserDto = { name: 'John Doe' };
       const exception = new Error('MongoDB error');
 
       (usersService.create as jest.Mock).mockImplementation(() => {
         throw exception;
       });
 
-      const response = await request(app.getHttpServer()).post('/users');
+      const response = await request(app.getHttpServer())
+        .post('/users')
+        .send(createUserDto);
       expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

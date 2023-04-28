@@ -9,7 +9,7 @@ import { AuthMiddleware } from '../common/middlewares/auth.middleware';
 import { RoomMessagesService } from './room-messages.service';
 import { RoomMessagesController } from './room-messages.controller';
 import { RoomMessage, RoomMessageSchema } from './schemas/room-message.schema';
-import { RoomsModule } from '../rooms/rooms.module';
+// import { RoomsModule } from '../rooms/rooms.module';
 import { RoomUsersModule } from '../room-users/room-users.module';
 
 @Module({
@@ -17,7 +17,7 @@ import { RoomUsersModule } from '../room-users/room-users.module';
     MongooseModule.forFeature([
       { name: RoomMessage.name, schema: RoomMessageSchema },
     ]),
-    RoomsModule,
+    // RoomsModule,
     RoomUsersModule,
   ],
   controllers: [RoomMessagesController],
