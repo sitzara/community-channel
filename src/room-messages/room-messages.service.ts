@@ -22,6 +22,16 @@ export class RoomMessagesService {
   ): Promise<RoomMessageEntity> {
     const roomUser = await this.roomUsersService.findOne(roomId, userId);
     if (!roomUser) {
+      /*
+       * User is being checked here if they are in the specified Room
+       * and authorized to send messages there.
+       * In real life application it's better move this logic to some
+       * RoomAuthorization middleware and set it for all the endpoints
+       * with Room specific logic:
+       * - sending messages
+       * - invite other users to the Room
+       * - leaving the Room etc.
+       */
       this.logger.log(
         `User doesn\'t belong to the Room: roomId = ${roomId}, userId = ${userId}`,
       );
