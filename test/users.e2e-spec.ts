@@ -1,14 +1,15 @@
 import * as request from 'supertest';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, HttpStatus } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersModule } from '../src/users/users.module';
 import { UsersService } from '../src/users/users.service';
 import { User } from '../src/users/schemas/user.schema';
 
-describe('AppController (e2e)', () => {
+describe('UserController (e2e)', () => {
   let app: INestApplication;
   let moduleRef: TestingModule;
+  let usersService: UsersService;
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
@@ -22,24 +23,43 @@ describe('AppController (e2e)', () => {
 
     app = moduleRef.createNestApplication();
     await app.init();
+
+    usersService = moduleRef.get<UsersService>(UsersService);
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  it('/users (POST)', async () => {
-    const result = {
-      id: '123',
-      name: 'John Doe',
-      createdAt: '2023-04-27T20:12:39.742Z',
-      updatedAt: '2023-04-27T20:12:39.742Z',
-    };
+  describe('/users (POST)', () => {
+    it('should return CREATED status and created User', async () => {
+      const result = {
+        id: '123',
+        name: 'John Doe',
+        createdAt: '2023-04-27T20:12:39.742Z',
+        updatedAt: '2023-04-27T20:12:39.742Z',
+      };
 
-    (moduleRef.get(UsersService).create as jest.Mock).mockResolvedValue(result);
+      (usersService.create as jest.Mock).mockResolvedValue(result);
 
-    const response = await request(app.getHttpServer()).post('/users');
-    expect(response.status).toBe(201);
-    expect(response.body).toEqual(result);
+      const response = await request(app.getHttpServer()).post('/users');
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body).toEqual(result);
+    });
+
+    it('should return INTERNAL_SERVER_ERROR in case of unexpected error', async () => {
+      const exception = new Error('MongoDB error');
+
+      (usersService.create as jest.Mock).mockImplementation(() => {
+        throw exception;
+      });
+
+      const response = await request(app.getHttpServer()).post('/users');
+      expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      });
+    });
   });
 });

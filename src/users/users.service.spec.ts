@@ -1,3 +1,4 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
@@ -16,16 +17,15 @@ describe('UsersService', () => {
       controllers: [UsersController],
       providers: [
         UsersService,
-        {
-          provide: getModelToken(User.name),
-          useValue: { create: jest.fn() },
-        },
+        // {
+        //   provide: getModelToken(User.name),
+        //   useValue: { create: jest.fn() },
+        // },
       ],
     })
       .useMocker((token) => {
         if (token === getModelToken(User.name)) {
-          console.log('MOCK');
-          return { create: jest.fn() };
+          return { findById: jest.fn(), create: jest.fn() };
         }
       })
       .compile();
@@ -41,26 +41,71 @@ describe('UsersService', () => {
     expect(userModel).toBeDefined();
   });
 
-  describe('create', () => {
-    it('should return created user', async () => {
-      const result = {
-        id: '123',
+  describe('findById', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return found User', async () => {
+      const id = '123';
+      const userEntity = {
         name: 'John Doe',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      (
-        moduleRef.get(getModelToken(User.name)).create as jest.Mock
-      ).mockResolvedValue({
-        _id: '123',
-        name: 'John Doe',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      (userModel.findById as jest.Mock).mockResolvedValue({
+        _id: id,
+        ...userEntity,
       });
 
-      const user = await usersService.create({ name: result.name });
-      expect(user).toEqual(result);
+      const user = await usersService.findById(id);
+      expect(user).toEqual({
+        id: id,
+        ...userEntity,
+      });
+    });
+
+    it('should throw HttpException if User is not found', async () => {
+      const id = '456';
+      const exception = new HttpException('Not found', HttpStatus.NOT_FOUND);
+
+      (userModel.findById as jest.Mock).mockImplementation(() => {
+        throw exception;
+      });
+
+      await expect(usersService.findById(id)).rejects.toThrow(exception);
+
+      expect(userModel.findById).toHaveBeenCalledTimes(1);
+      expect(userModel.findById).toHaveBeenCalledWith(id);
+    });
+  });
+
+  describe('create', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return created User', async () => {
+      const createUserDto = { name: 'John Doe' };
+      const userEntity = {
+        name: createUserDto.name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      (userModel.create as jest.Mock).mockResolvedValue({
+        _id: '123',
+        ...userEntity,
+      });
+
+      const user = await usersService.create(createUserDto);
+      expect(userModel.create).toHaveBeenCalledTimes(1);
+      expect(userModel.create).toHaveBeenCalledWith(createUserDto);
+      expect(user).toEqual({
+        id: '123',
+        ...userEntity,
+      });
     });
   });
 });

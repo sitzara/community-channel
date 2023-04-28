@@ -5,6 +5,7 @@ import { UsersService } from './users.service';
 describe('UsersController', () => {
   let moduleRef: TestingModule;
   let userController: UsersController;
+  let usersService: UsersService;
 
   beforeEach(async () => {
     moduleRef = await Test.createTestingModule({
@@ -18,6 +19,7 @@ describe('UsersController', () => {
       .compile();
 
     userController = moduleRef.get<UsersController>(UsersController);
+    usersService = moduleRef.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {
@@ -26,19 +28,20 @@ describe('UsersController', () => {
 
   describe('create', () => {
     it('should return created user', async () => {
-      const result = {
+      const createUserDto = { name: 'John Doe' };
+      const userEntity = {
         id: '123',
-        name: 'John Doe',
+        name: createUserDto.name,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      (moduleRef.get(UsersService).create as jest.Mock).mockResolvedValue(
-        result,
-      );
+      (usersService.create as jest.Mock).mockResolvedValue(userEntity);
 
-      const user = await userController.create({ name: result.name });
-      expect(user).toEqual(result);
+      const user = await userController.create(createUserDto);
+      expect(usersService.create).toHaveBeenCalledTimes(1);
+      expect(usersService.create).toHaveBeenCalledWith(createUserDto);
+      expect(user).toEqual(userEntity);
     });
   });
 });
