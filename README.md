@@ -16,6 +16,8 @@ $ npm install
 
 ## Running the app
 
+The app requires MongoDB to be run. Credentials must be set in `.env` file (see `.env.example`)
+
 ```bash
 # development
 $ npm run start
@@ -25,6 +27,9 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
+
+# docker mode
+$ npm run start:docker
 ```
 
 ## Test
