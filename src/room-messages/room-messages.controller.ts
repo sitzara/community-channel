@@ -4,6 +4,7 @@ import {
   ApiCreatedResponse,
   ApiBadRequestResponse,
   ApiNotFoundResponse,
+  ApiNotAcceptableResponse,
 } from '@nestjs/swagger';
 import { RoomMessagesService } from './room-messages.service';
 import { CreateRoomMessageDto } from './dto/create-room-message.dto';
@@ -16,7 +17,7 @@ export class RoomMessagesController {
 
   @ApiCreatedResponse({ description: 'Created', type: RoomMessageEntity })
   @ApiBadRequestResponse({ description: 'Bad request' })
-  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiNotAcceptableResponse({ description: 'Not acceptable' })
   @Post()
   create(
     @Param('id') id: string,

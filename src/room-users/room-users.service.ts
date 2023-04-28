@@ -49,6 +49,15 @@ export class RoomUsersService {
   }
 
   async findOne(roomId: string, userId: string): Promise<RoomUserEntity> {
-    return this.roomUserModel.findOne({ roomId, userId });
+    const result = await this.roomUserModel.findOne({ roomId, userId });
+    if (!result) return null;
+    return {
+      id: result._id.toString(),
+      roomId: result.roomId,
+      userId: result.userId,
+      userName: result.userName,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    };
   }
 }

@@ -14,7 +14,7 @@ describe('RoomsController', () => {
     })
       .useMocker((token) => {
         if (token === RoomsService) {
-          return { create: jest.fn() };
+          return { findById: jest.fn(), create: jest.fn() };
         }
       })
       .compile();
@@ -25,10 +25,11 @@ describe('RoomsController', () => {
 
   it('should be defined', () => {
     expect(roomsController).toBeDefined();
+    expect(roomsService).toBeDefined();
   });
 
   describe('create', () => {
-    it('should return created user', async () => {
+    it('should return created Room', async () => {
       const userId = '123';
       const createUserDto = { name: 'Room #1' };
       const roomEntity = {
@@ -46,6 +47,25 @@ describe('RoomsController', () => {
       expect(roomsService.create).toHaveBeenCalledTimes(1);
       expect(roomsService.create).toHaveBeenCalledWith(userId, createUserDto);
       expect(user).toEqual(roomEntity);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return found Room', async () => {
+      const roomId = '456';
+      const roomEntity = {
+        id: roomId,
+        name: 'Room #1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      (roomsService.findById as jest.Mock).mockResolvedValue(roomEntity);
+
+      const room = await roomsController.findOne(roomId);
+      expect(roomsService.findById).toHaveBeenCalledTimes(1);
+      expect(roomsService.findById).toHaveBeenCalledWith(roomId);
+      expect(room).toEqual(roomEntity);
     });
   });
 });

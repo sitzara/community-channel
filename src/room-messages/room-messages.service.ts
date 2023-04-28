@@ -20,9 +20,8 @@ export class RoomMessagesService {
   ): Promise<RoomMessageEntity> {
     const roomUser = await this.roomUsersService.findOne(roomId, userId);
     if (!roomUser) {
-      console.error('Unauthorized to send messages to the room');
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-      return;
+      console.error('User can not save messages to the Room');
+      throw new HttpException('Not acceptable', HttpStatus.NOT_ACCEPTABLE);
     }
 
     const { userName } = roomUser;
@@ -47,11 +46,15 @@ export class RoomMessagesService {
   }
 
   async findAll(roomId: string, limit?: number): Promise<RoomMessageEntity[]> {
-    const messages = await this.roomMessageModel.find(
-      { roomId },
-      null,
-      limit ? { limit } : null,
-    );
+    let query = this.roomMessageModel
+      .find({ roomId })
+      .sort({ createdAt: 'desc' });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const messages = await query;
 
     return messages.map((m) => ({
       id: m._id.toString(),
